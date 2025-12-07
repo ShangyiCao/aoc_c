@@ -4,61 +4,45 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-long compute_result(List *array, List *operators, bool row_wise) {
-  List *results = List_create(sizeof(long), 0, 0, 0);
-  for (int i = 0; i < operators->len; i++) {
-    long result;
-    char *operator = List_get(operators, i);
-    assert(*operator == '+' || *operator == '*');
-    if (*operator == '+') {
-      result = 0;
-    } else {
-      result = 1;
-    }
-    List_append(results, &result);
+long compute_result(long **array, char *operators, int rows_len,
+                    int *len_per_row, int results_len, bool row_wise) {
+  long *results = malloc(sizeof(long) * results_len);
+  for (int i = 0; i < results_len; i++) {
+    results[i] = (operators[i] == '+') ? 0 : 1;
   }
 
   if (row_wise) {
-    for (int i = 0; i < array->len; i++) {
-      List *row = List_get(array, i);
-      for (int j = 0; j < row->len; j++) {
-        char *operator = List_get(operators, j);
-        long *result = List_get(results, j);
-        long *num = List_get(row, j);
-        if (*operator == '+') {
-          *result += *num;
+    for (int i = 0; i < rows_len; i++) {
+      for (int j = 0; j < len_per_row[i]; j++) {
+        if (operators[j] == '+') {
+          results[j] += array[i][j];
         } else {
-          *result *= *num;
+          results[j] *= array[i][j];
         }
       }
     }
   } else {
-    for (int i = 0; i < array->len; i++) {
-      List *column = List_get(array, i);
-      long *result = List_get(results, i);
-      char *operator = List_get(operators, i);
-      for (int j = 0; j < column->len; j++) {
-        long *num = List_get(column, j);
-        if (*operator == '+') {
-          *result += *num;
+    for (int i = 0; i < rows_len; i++) {
+      for (int j = 0; j < len_per_row[i]; j++) {
+        if (operators[i] == '+') {
+          results[i] += array[i][j];
         } else {
-          *result *= *num;
+          results[i] *= array[i][j];
         }
       }
     }
   }
 
   long counter = 0;
-  for (int i = 0; i < results->len; i++) {
-    long result = *(long *)List_get(results, i);
-    counter += result;
+  for (int i = 0; i < results_len; i++) {
+    counter += results[i];
   }
-  List_free(results);
+  free(results);
   return counter;
 }
 
 int main() {
-  FILE *file = fopen("1.txt", "r");
+  FILE *file = fopen("input.txt", "r");
   int capacity = 128;
   char *buffer = malloc(capacity);
   size_t length = 0;
@@ -80,7 +64,16 @@ int main() {
 
   char *p = buffer;
   bool stop = false;
-  List *rows = List_create(sizeof(List), List_compare, List_copy, List_free);
+  int rows_len = 0;
+  int rows_capacity = 1024;
+  long **rows = malloc(sizeof(long *) * rows_capacity);
+  int *len_per_row = malloc(sizeof(int) * rows_capacity);
+  int *capacity_per_row = malloc(sizeof(int) * rows_capacity);
+  for (int i = 0; i < rows_capacity; i++) {
+    len_per_row[i] = 0;
+    capacity_per_row[i] = 1024;
+  }
+
   while (!stop) {
     while (!isdigit(*p)) {
       p++;
@@ -92,12 +85,22 @@ int main() {
     if (stop) {
       break;
     }
-    List_append(rows, List_create(sizeof(long), 0, 0, 0));
-    List *row = List_get(rows, rows->len - 1);
+    long *row = malloc(sizeof(long) * capacity_per_row[rows_len]);
+    if (rows_len == rows_capacity) {
+      rows_capacity *= 2;
+      rows = realloc(rows, rows_capacity);
+      len_per_row = realloc(len_per_row, rows_capacity);
+      capacity_per_row = realloc(capacity_per_row, rows_capacity);
+    }
+    rows[rows_len] = row;
+
     bool start_new_line = false;
     while (isdigit(*p)) {
-      long a = strtol(p, (char **)&p, 10);
-      List_append(row, &a);
+      if (len_per_row[rows_len] == capacity_per_row[rows_len]) {
+        capacity_per_row[rows_len] *= 2;
+        row = realloc(row, capacity_per_row[rows_len]);
+      }
+      row[len_per_row[rows_len]++] = strtol(p, (char **)&p, 10);
       do {
         if (*p == '\n') {
           start_new_line = true;
@@ -109,24 +112,35 @@ int main() {
         break;
       }
       if (start_new_line) {
+        rows_len++;
         break;
       }
     }
   }
-  List *operators = List_create(sizeof(char), 0, 0, 0);
+  int operators_len = 0;
+  int operators_capacity = 1024;
+  char *operators = malloc(operators_capacity);
   while (*p != 0) {
     if (*p == '+' || *p == '*') {
-      List_append(operators, p);
+      if (operators_len == operators_capacity) {
+        operators_capacity *= 2;
+        operators = realloc(operators, operators_capacity);
+      }
+      operators[operators_len++] = *p;
     }
     p++;
   }
 
-  printf("%ld\n", compute_result(rows, operators, true));
+  printf("%ld\n", compute_result(rows, operators, rows_len, len_per_row,
+                                 operators_len, true));
 
-  List *columns = List_create(sizeof(List), List_compare, List_copy, List_free);
-  for (int i = 0; i < operators->len; i++) {
-    List *column = List_create(sizeof(long), 0, 0, 0);
-    List_append(columns, column);
+  long **columns = malloc(sizeof(long *) * operators_len);
+  int *len_per_column = malloc(sizeof(int) * operators_len);
+  int *capacity_per_column = malloc(sizeof(int) * operators_len);
+  for (int i = 0; i < operators_len; i++) {
+    capacity_per_column[i] = 10;
+    long *column = malloc(sizeof(long) * capacity_per_column[i]);
+    columns[i] = column;
   }
 
   const char (*grid)[nx + 1] = (void *)buffer;
@@ -141,12 +155,11 @@ int main() {
     }
     if (new_column) {
       column_id++;
-      if (column_id == columns->len) {
+      if (column_id == operators_len) {
         break;
       }
       i++;
     }
-    List *column = List_get(columns, column_id);
     long num = 0;
     int j = 0;
     while (j < ny) {
@@ -163,15 +176,27 @@ int main() {
       }
       j++;
     }
-    List_append(column, &num);
+    long *column = columns[column_id];
+    if (len_per_column[column_id] == capacity_per_column[column_id]) {
+      capacity_per_column[column_id] *= 2;
+      column = realloc(column, capacity_per_column[column_id]);
+    }
+    column[len_per_column[column_id]++] = num;
     i++;
   }
 
-  printf("%ld\n", compute_result(columns, operators, false));
+  printf("%ld\n", compute_result(columns, operators, operators_len,
+                                 len_per_column, operators_len, false));
 
   free(buffer);
-  List_free(rows);
-  List_free(columns);
-  List_free(operators);
+  for (int i = 0; i < rows_len; i++) {
+    free(rows[i]);
+  }
+  free(rows);
+  for (int i = 0; i < operators_len; i++) {
+    free(columns[i]);
+  }
+  free(columns);
+  free(operators);
   return 0;
 }
