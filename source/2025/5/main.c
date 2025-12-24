@@ -34,8 +34,8 @@ void merge_ranges(Range *range1, Range *range2) {
   return;
 }
 
-int main() {
-  FILE *file = fopen("1.txt", "r");
+int main(int argc, char **argv) {
+  FILE *file = fopen(argv[1], "r");
   List *ranges = List_create(sizeof(Range), 0, 0, 0);
   List *ingredients = List_create(sizeof(long), 0, 0, 0);
   long a;

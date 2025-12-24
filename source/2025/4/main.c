@@ -12,8 +12,8 @@ bool is_inside(int i, int j, int nx, int ny) {
   return 0 <= i && i < nx && 0 <= j && j < ny;
 }
 
-int main() {
-  FILE *file = fopen("1.txt", "r");
+int main(int argc, char **argv) {
+  FILE *file = fopen(argv[1], "r");
   int ch;
   int capacity = 128;
   char *buffer = malloc(capacity);

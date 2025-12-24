@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int main() {
-  FILE *file = fopen("1.txt", "r");
+int main(int argc, char **argv) {
+  FILE *file = fopen(argv[1], "r");
   char c;
   int d;
   int x0 = 50;

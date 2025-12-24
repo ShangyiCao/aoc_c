@@ -41,8 +41,8 @@ long compute_result(long **array, char *operators, int rows_len,
   return counter;
 }
 
-int main() {
-  FILE *file = fopen("input.txt", "r");
+int main(int argc, char **argv) {
+  FILE *file = fopen(argv[1], "r");
   int capacity = 128;
   char *buffer = malloc(capacity);
   size_t length = 0;

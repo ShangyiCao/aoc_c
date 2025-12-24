@@ -92,8 +92,8 @@ Pair make_pair(Coordinate a, Coordinate b) {
   }
 }
 
-int main() {
-  FILE *file = fopen("input.txt", "r");
+int main(int argc, char **argv) {
+  FILE *file = fopen(argv[1], "r");
   int vertices_len = 0;
   int vertices_capacity = 1024;
   Coordinate *vertices = malloc(sizeof(Coordinate) * vertices_capacity);

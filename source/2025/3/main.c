@@ -39,8 +39,8 @@ long find_combo(char *line, int nx, int digits) {
   return result;
 }
 
-int main() {
-  FILE *file = fopen("1.txt", "r");
+int main(int argc, char **argv) {
+  FILE *file = fopen(argv[1], "r");
   int ch;
   int capacity = 128;
   char *buffer = malloc(capacity);

@@ -4,8 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-int main() {
-  FILE *file = fopen("1.txt", "r");
+int main(int argc, char **argv) {
+  FILE *file = fopen(argv[1], "r");
   int capacity = 128;
   char *buffer = malloc(capacity);
   size_t length = 0;

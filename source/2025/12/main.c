@@ -30,8 +30,8 @@ int check(char (*presents)[3][3], int presents_len, int m, int n,
   return 0;
 }
 
-int main() {
-  FILE *file = fopen("input.txt", "r");
+int main(int argc, char **argv) {
+  FILE *file = fopen(argv[1], "r");
 
   int presents_capacity = 10;
   int presents_len = 0;

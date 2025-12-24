@@ -30,8 +30,8 @@ long dfs(Dict *graph, char *start, char *end, Set *visited, Dict *record) {
   return sum;
 }
 
-int main() {
-  FILE *file = fopen("input.txt", "r");
+int main(int argc, char **argv) {
+  FILE *file = fopen(argv[1], "r");
   char line[128];
   Dict *graph =
       Dict_create(1000, sizeof(char) * 3, sizeof(List), List_copy, List_free);

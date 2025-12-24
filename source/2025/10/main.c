@@ -127,8 +127,8 @@ long bfs(unsigned long goal, int goal_len, unsigned long *buttons,
   }
 }
 
-int main() {
-  FILE *file = fopen("input.txt", "r");
+int main(int argc, char **argv) {
+  FILE *file = fopen(argv[1], "r");
   char line[1024];
   long count1 = 0;
   long count2 = 0;

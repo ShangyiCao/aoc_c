@@ -86,8 +86,8 @@ void find_circuits(Dict *graph, long *circuit_sizes) {
   Set_free(visited);
 }
 
-int main() {
-  FILE *file = fopen("input.txt", "r");
+int main(int argc, char **argv) {
+  FILE *file = fopen(argv[1], "r");
   int coordinates_capacity = 1024;
   int coordinates_len = 0;
   Coordinate *coordinates = malloc(sizeof(Coordinate) * coordinates_capacity);
