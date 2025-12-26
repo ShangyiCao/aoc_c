@@ -9,28 +9,16 @@ typedef struct {
   long b;
 } Range;
 
+long min(long a, long b) { return a <= b ? a : b; }
+long max(long a, long b) { return a >= b ? a : b; }
+
+bool disjoint(Range *range1, Range *range2) {
+  return range1->b < range2->a || range1->a > range2->b;
+}
+
 void merge_ranges(Range *range1, Range *range2) {
-  Range range;
-  if (range1->a <= range2->a) {
-    assert(range1->b >= range2->a);
-    range.a = range1->a;
-    if (range1->b <= range2->b) {
-      range.b = range2->b;
-    } else {
-      range.b = range1->b;
-    }
-  } else if (range1->a <= range2->b) {
-    range.a = range2->a;
-    if (range1->b <= range2->b) {
-      range.b = range2->b;
-    } else {
-      range.b = range1->b;
-    }
-  } else {
-    assert(false);
-  }
-  range1->a = range.a;
-  range1->b = range.b;
+  range1->a = min(range1->a, range2->a);
+  range1->b = max(range1->b, range2->b);
   return;
 }
 
@@ -63,26 +51,24 @@ int main(int argc, char **argv) {
 
   bool stop = false;
   while (!stop) {
-    List *removed = List_create(sizeof(bool), 0, 0, 0);
+    bool *removed = malloc(sizeof(bool) * ingredients->len);
     for (int i = 0; i < ranges->len; i++) {
-      List_append(removed, &(bool){false});
+      removed[i] = false;
     }
     List *merged_ranges = List_create(sizeof(Range), 0, 0, 0);
     for (int i = 0; i < ranges->len; i++) {
-      if (*(bool *)List_get(removed, i) == true) {
+      if (removed[i]) {
         continue;
       }
       Range *range1 = List_get(ranges, i);
       for (int j = i + 1; j < ranges->len; j++) {
-        if (*(bool *)List_get(removed, j) == true) {
+        if (removed[j]) {
           continue;
         }
         Range *range2 = List_get(ranges, j);
-        if (range1->b < range2->a || range1->a > range2->b) {
-        } else {
+        if (!disjoint(range1, range2)) {
           merge_ranges(range1, range2);
-          bool *flag = List_get(removed, j);
-          *flag = true;
+          removed[j] = true;
         }
       }
       List_append(merged_ranges, range1);
@@ -91,7 +77,7 @@ int main(int argc, char **argv) {
       stop = true;
     }
     List_free(ranges);
-    List_free(removed);
+    free(removed);
     ranges = merged_ranges;
   }
 
