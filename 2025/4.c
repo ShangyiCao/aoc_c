@@ -35,7 +35,7 @@ int main(int argc, char **argv) {
 
   int global_count = 0;
   int it = 0;
-  bool stop;
+  bool stop = false;
   while (!stop) {
     List *removed_indexes = List_create(sizeof(Point), 0, 0, 0);
     for (int j = 0; j < ny; j++) {
