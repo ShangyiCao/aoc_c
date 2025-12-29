@@ -115,33 +115,22 @@ int main(int argc, char **argv) {
 
   Dict *graph = Dict_create(coordinates_len * 2, sizeof(Coordinate),
                             sizeof(List), List_copy, List_free);
-  bool stop = true;
-  int it = 0;
   for (int i = 0; i < n_pairs; i++) {
     Pair pair = pairs[i];
     add_to_graph(graph, pair.a, pair.b);
     add_to_graph(graph, pair.b, pair.a);
-    if (graph->len == coordinates_len) {
-      long *circuit_sizes = calloc(graph->len, sizeof(long));
-      find_circuits(graph, circuit_sizes);
-      qsort(circuit_sizes, graph->len, sizeof(long), compare_descend);
-      if (circuit_sizes[0] == coordinates_len) {
-        printf("%ld\n", pair.a.x * pair.b.x);
-        stop = true;
-      }
-      free(circuit_sizes);
-      if (stop) {
-        break;
-      }
-    }
-    it++;
-    if (it == 1000) {
-      long *circuit_sizes = calloc(graph->len, sizeof(long));
-      find_circuits(graph, circuit_sizes);
-      qsort(circuit_sizes, graph->len, sizeof(long), compare_descend);
+    long *circuit_sizes = calloc(graph->len, sizeof(long));
+    find_circuits(graph, circuit_sizes);
+    qsort(circuit_sizes, graph->len, sizeof(long), compare_descend);
+    if (i == 999) {
       printf("%ld\n", circuit_sizes[0] * circuit_sizes[1] * circuit_sizes[2]);
-      free(circuit_sizes);
     }
+    if (circuit_sizes[0] == coordinates_len) {
+      printf("%ld\n", pair.a.x * pair.b.x);
+      free(circuit_sizes);
+      break;
+    }
+    free(circuit_sizes);
   }
   free(pairs);
   free(coordinates);
